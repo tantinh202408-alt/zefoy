@@ -662,12 +662,87 @@ def index():
         key=state["key"]
     )
 
+def mask_key(k):
+    if not k:
+        return ""
+    if len(k) <= 8:
+        return "****"
+    return k[:4] + "****" + k[-4:]
+
 @app.route("/api/status")
 @app.route("/status")
 def api_status():
     state = manager.get_state()
+    # Mask key if caller doesn't provide the matching key in query parameter
+    req_key = request.args.get("key", "").strip()
+    if req_key != manager.key:
+        state["key"] = mask_key(state.get("key", ""))
     state["online_services"] = [s["name"] for s in manager.services_list if s.get("available")]
     return jsonify(state)
+
+@app.route("/api/<path:user_input>", methods=["GET", "POST"])
+def api_key_direct(user_input):
+    user_input = user_input.strip()
+
+    # Case 1: https://domain/api/{key}=url format
+    if "=" in user_input and ("http://" in user_input or "https://" in user_input or "tiktok.com" in user_input):
+        key_part, _, url_part = user_input.partition("=")
+        key_val = key_part.strip()
+        url = url_part.strip()
+    else:
+        key_val = user_input
+        url = (request.args.get("url") or "").strip()
+
+    if not url and request.is_json:
+        url = ((request.get_json(silent=True) or {}).get("url") or "").strip()
+    if not url and request.form:
+        url = (request.form.get("url") or "").strip()
+
+    req_service = request.args.get("service") or request.args.get("type")
+    if not req_service and request.is_json:
+        req_service = (request.get_json(silent=True) or {}).get("service")
+    service_name = req_service or manager.service or "Favorites"
+
+    for s in manager.services_list:
+        if s["name"].lower().replace(" ", "").replace("_", "") == service_name.lower().replace(" ", "").replace("_", ""):
+            service_name = s["name"]
+            break
+
+    # If URL is provided -> RUN BOT
+    if url:
+        ok, msg = manager.start(url=url, service=service_name, key=key_val)
+        return jsonify({
+            "success": ok,
+            "message": msg,
+            "key": mask_key(key_val),
+            "service": service_name,
+            "url": url,
+            "status_url": f"{request.host_url}api/{key_val}"
+        }), (200 if ok else 400)
+
+    # If NO URL is provided -> RETURN STATUS FOR THIS KEY
+    state = manager.get_state()
+    is_owner = (key_val.lower() == (manager.key or "").lower())
+    if not is_owner:
+        return jsonify({
+            "success": False,
+            "message": "Key không khớp với bot đang chạy trên server!",
+            "key_provided": mask_key(key_val)
+        }), 403
+
+    return jsonify({
+        "success": True,
+        "key": mask_key(key_val),
+        "is_running": state["is_running"],
+        "video_url": state["video_url"],
+        "service": state["service"],
+        "status": state["status"],
+        "timer": state["timer"],
+        "last_sent": state["last_sent"],
+        "total_sent": state["total_sent"],
+        "online_services": [s["name"] for s in manager.services_list if s.get("available")],
+        "logs": state["logs"][-15:]
+    })
 
 @app.route("/api/services")
 @app.route("/services")
