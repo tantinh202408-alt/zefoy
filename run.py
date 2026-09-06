@@ -406,19 +406,35 @@ class Zefoy:
                 'accept-language': 'en-US,en;q=0.9',
             })
             if os.path.exists('session'):
-                os.remove('session')
-            time.sleep(2)
+                try:
+                    os.remove('session')
+                except Exception:
+                    pass
+            time.sleep(1)
 
         if self.get_captcha():
-            print('  \033[1;35m[*] \033[1;37mĐang kết nối session có sẵn...\033[0m')
+            msg = 'Đang kết nối session có sẵn...'
+            if self.on_log:
+                self.on_log(msg)
+            if not self.headless:
+                print(f'  \033[1;35m[*] \033[1;37m{msg}\033[0m')
             return (True, 'The session already exists')
 
+        if self.on_log:
+            self.on_log("Đang giải mã Captcha...")
         captcha_solve = self.solve_captcha('captcha.png')[1]
         captcha_solve = re.sub(r'[^a-zA-Z]', '', captcha_solve or '').lower()
         if not captcha_solve:
-            print('  \033[1;31m[!] OCR rỗng, đang thử lại Captcha...\033[0m')
+            msg = 'OCR rỗng, đang tải lại Captcha mới...'
+            if self.on_log:
+                self.on_log(msg)
+            if not self.headless:
+                print(f'  \033[1;31m[!] {msg}\033[0m')
             time.sleep(1)
-            return self.send_captcha(new_session=False)
+            return self.send_captcha(new_session=True)
+
+        if self.on_log:
+            self.on_log(f"Đã giải Captcha: {captcha_solve}, đang gửi xác thực...")
 
         encoded = self.captcha_.get('captcha_encoded') or build_captcha_encoded(
             self.headers['user-agent']
@@ -450,17 +466,26 @@ class Zefoy:
                 ok = True
 
         if ok:
-            print('  \033[1;32m[✓] \033[1;37mSession mới đã được tạo thành công\033[0m')
             sid = self.session.cookies.get('PHPSESSID')
             if sid:
-                open('session', 'w', encoding='utf-8').write(sid)
-            print(f"  \033[1;32m[✓] \033[1;37mGiải Captcha thành công: \033[1;32m{captcha_solve}\033[0m")
+                try:
+                    open('session', 'w', encoding='utf-8').write(sid)
+                except Exception:
+                    pass
+            msg = f"Giải Captcha thành công: {captcha_solve}"
+            if self.on_log:
+                self.on_log(msg)
+            if not self.headless:
+                print(f'  \033[1;32m[✓] \033[1;37m{msg}\033[0m')
             panel = self.session.get(self.base_url, headers=self.headers, timeout=30)
             self._extract_video_key(panel.text)
             return (True, captcha_solve)
 
+        msg = f"Captcha không khớp ({captcha_solve}), đang thử lại..."
+        if self.on_log:
+            self.on_log(msg)
         time.sleep(1)
-        return self.send_captcha(new_session=False)
+        return self.send_captcha(new_session=True)
 
     def solve_captcha(self, path_to_file = None, b64 = None, delete_tag = ['\n','\r']):
         if path_to_file:
@@ -792,7 +817,7 @@ class Zefoy:
 
             if 'Session expired' in html or is_captcha_page(html):
                 self.render_dashboard("Phiên hết hạn, đang giải Captcha mới...")
-                self.send_captcha()
+                self.send_captcha(new_session=True)
                 continue
 
             if 'service is currently not working' in html.lower():
@@ -905,7 +930,7 @@ class Zefoy:
 
         if 'Session expired' in res or is_captcha_page(res):
             self.render_dashboard("Session hết hạn, đang tạo phiên mới...")
-            self.send_captcha()
+            self.send_captcha(new_session=True)
             return ""
         if 'Too many requests' in res:
             self.render_dashboard("Gửi quá nhanh, tạm nghỉ 4s...")
