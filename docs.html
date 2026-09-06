@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zefoy Bot API Documentation & Guide | Sang Dev</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #090d16;
+            --sidebar-bg: #0d1322;
+            --card-bg: rgba(16, 24, 40, 0.7);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(56, 189, 248, 0.35);
+            --accent: #38bdf8;
+            --accent-glow: rgba(56, 189, 248, 0.2);
+            --emerald: #10b981;
+            --emerald-glow: rgba(16, 185, 129, 0.2);
+            --amber: #f59e0b;
+            --rose: #f43f5e;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --code-bg: #050811;
+            --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Navigation */
+        aside {
+            width: 280px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--card-border);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 24px 16px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, #0284c7, #38bdf8);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .brand-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.02em;
+        }
+
+        .brand-sub {
+            font-size: 0.75rem;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .nav-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .nav-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-bottom: 6px;
+            padding-left: 12px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: #fff;
+            background: rgba(56, 189, 248, 0.1);
+            border-left: 3px solid var(--accent);
+        }
+
+        .nav-link .badge-method {
+            margin-left: auto;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            max-width: 1080px;
+            padding: 40px 48px 80px;
+            overflow-x: hidden;
+        }
+
+        /* Header Hero */
+        .hero {
+            margin-bottom: 48px;
+            padding-bottom: 32px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(56, 189, 248, 0.12);
+            color: var(--accent);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .hero h1 {
+            font-size: 2.4rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: #fff;
+            margin-bottom: 12px;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 800px;
+        }
+
+        .quick-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--code-bg);
+            border: 1px solid var(--card-border);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-family: var(--font-mono);
+        }
+
+        .meta-item span {
+            color: var(--text-muted);
+            font-family: var(--font-sans);
+        }
+
+        /* Sections */
+        section {
+            margin-bottom: 64px;
+        }
+
+        .section-header {
+            margin-bottom: 24px;
+        }
+
+        .section-header h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(12px);
+            transition: border-color 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: var(--border-hover);
+        }
+
+        /* Method Badges */
+        .badge-method {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            font-family: var(--font-mono);
+            letter-spacing: 0.05em;
+        }
+
+        .method-get {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .method-post {
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        /* Tables */
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 10px;
+            border: 1px solid var(--card-border);
+            background: var(--code-bg);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-muted);
+            font-weight: 600;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--card-border);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: #cbd5e1;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        code {
+            font-family: var(--font-mono);
+            background: rgba(255, 255, 255, 0.08);
+            color: #38bdf8;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+
+        /* Flow Steps Grid */
+        .flow-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .flow-card {
+            background: var(--code-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 18px;
+            position: relative;
+        }
+
+        .flow-step-num {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            font-family: var(--font-mono);
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .flow-card h4 {
+            font-size: 1rem;
+            color: #fff;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .flow-card p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Code Blocks */
+        .code-container {
+            background: var(--code-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 14px 0;
+        }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--card-border);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+
+        .code-header button {
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            color: var(--accent);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .code-header button:hover {
+            background: var(--accent);
+            color: #000;
+        }
+
+        pre {
+            padding: 16px;
+            overflow-x: auto;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+
+        /* Code Tabs */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            border-bottom: 1px solid var(--card-border);
+            background: rgba(255, 255, 255, 0.02);
+            padding: 6px 12px 0;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 8px 14px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Interactive Tester */
+        .tester-box {
+            background: linear-gradient(180deg, rgba(16, 24, 40, 0.85), rgba(11, 16, 29, 0.95));
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row { grid-template-columns: 1fr; }
+            body { flex-direction: column; }
+            aside { width: 100%; height: auto; position: static; }
+            main { padding: 20px; }
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-group label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .input-group input, .input-group select {
+            background: var(--code-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: #fff;
+            font-family: var(--font-mono);
+            font-size: 0.88rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            border-color: var(--accent);
+        }
+
+        .btn-action-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .btn-test {
+            background: linear-gradient(135deg, #0284c7, #38bdf8);
+            color: #04101e;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-test:hover {
+            box-shadow: 0 0 16px var(--accent-glow);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--text-muted);
+        }
+
+        .btn-danger {
+            background: rgba(244, 63, 94, 0.15);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            color: #fb7185;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-danger:hover {
+            background: rgba(244, 63, 94, 0.25);
+        }
+
+        .tester-output {
+            margin-top: 20px;
+            background: var(--code-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .tester-status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid var(--card-border);
+            font-size: 0.82rem;
+            font-family: var(--font-mono);
+        }
+
+        .status-badge {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+        }
+
+        .status-200 { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .status-400 { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+        .status-500 { background: rgba(244, 63, 94, 0.2); color: #f87171; }
+
+        /* Footnotes & Alerts */
+        .callout {
+            border-left: 4px solid var(--accent);
+            background: rgba(56, 189, 248, 0.06);
+            padding: 16px 20px;
+            border-radius: 0 10px 10px 0;
+            margin: 16px 0;
+            font-size: 0.9rem;
+        }
+
+        .callout-title {
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .callout-success {
+            border-left-color: var(--emerald);
+            background: rgba(16, 185, 129, 0.06);
+        }
+
+        .callout-success .callout-title {
+            color: var(--emerald);
+        }
+
+        .callout-warning {
+            border-left-color: var(--amber);
+            background: rgba(245, 158, 11, 0.06);
+        }
+
+        .callout-warning .callout-title {
+            color: var(--amber);
+        }
+
+        footer {
+            margin-top: 60px;
+            padding-top: 24px;
+            border-top: 1px solid var(--card-border);
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <aside>
+        <div class="brand">
+            <div class="brand-icon">⚡</div>
+            <div>
+                <div class="brand-title">ZEFOY API DOCS</div>
+                <div class="brand-sub">Sang Dev Engineering</div>
+            </div>
+        </div>
+
+        <nav class="nav-group">
+            <div class="nav-label">Bắt Đầu</div>
+            <a href="#overview" class="nav-link active">🚀 Tổng Quan</a>
+            <a href="#architecture" class="nav-link">⚙️ Cách Hoạt Động</a>
+            <a href="#parameters" class="nav-link">📋 Danh Sách Tham Số</a>
+        </nav>
+
+        <nav class="nav-group">
+            <div class="nav-label">API Endpoints</div>
+            <a href="#endpoint-shorthand" class="nav-link">
+                /api/{key}={url}
+                <span class="badge-method method-get">GET</span>
+            </a>
+            <a href="#endpoint-run" class="nav-link">
+                /run (Bắt đầu bot)
+                <span class="badge-method method-get">GET</span>
+            </a>
+            <a href="#endpoint-status" class="nav-link">
+                /api/{key} (Trạng thái)
+                <span class="badge-method method-get">GET</span>
+            </a>
+            <a href="#endpoint-services" class="nav-link">
+                /api/services (Online)
+                <span class="badge-method method-get">GET</span>
+            </a>
+            <a href="#endpoint-stop" class="nav-link">
+                /stop (Dừng bot)
+                <span class="badge-method method-get">GET</span>
+            </a>
+            <a href="#endpoint-ping" class="nav-link">
+                /ping (Health Check)
+                <span class="badge-method method-get">GET</span>
+            </a>
+        </nav>
+
+        <nav class="nav-group">
+            <div class="nav-label">Thực Thi & Mã Nguồn</div>
+            <a href="#playground" class="nav-link">🧪 Test API Trực Tiếp</a>
+            <a href="#code-samples" class="nav-link">💻 Code Mẫu</a>
+            <a href="#anti-502" class="nav-link">🛡️ Chống 502 & Uptime 24/7</a>
+        </nav>
+
+        <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid var(--card-border); font-size: 0.78rem; color: var(--text-muted);">
+            Dev: <strong>Sang Dev</strong><br>
+            Telegram: <a href="https://t.me/sangnguyendev" target="_blank" style="color: var(--accent); text-decoration: none;">@sangnguyendev</a>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main>
+
+        <!-- Hero -->
+        <header class="hero" id="overview">
+            <div class="badge-pill">⚡ PRODUCTION READY API • V2.5</div>
+            <h1>Tài Liệu & Hướng Dẫn Sử Dụng Zefoy Automation API</h1>
+            <p>Hệ thống tự động hóa tăng tương tác TikTok (Favorites, Views, Hearts) trên nền tảng Zefoy, tích hợp giải Captcha thông minh AI, xử lý nền bất đồng bộ và chống lỗi 502.</p>
+
+            <div class="quick-meta">
+                <div class="meta-item"><span>Base URL:</span> https://zefoy-oayb.onrender.com</div>
+                <div class="meta-item"><span>Format:</span> JSON / HTTP REST</div>
+                <div class="meta-item"><span>Key Auth:</span> VIP License (sangdev.online)</div>
+            </div>
+        </header>
+
+        <!-- Architecture & How it works -->
+        <section id="architecture">
+            <div class="section-header">
+                <h2>⚙️ Cách Hệ Thống Hoạt Động (Architecture & Lifecycle)</h2>
+                <p>Quy trình xử lý từ khi bạn gọi API đến khi bot gửi tương tác thành công vào video TikTok</p>
+            </div>
+
+            <div class="flow-grid">
+                <div class="flow-card">
+                    <div class="flow-step-num">01</div>
+                    <h4>📡 1. Tiếp Nhận Yêu Cầu</h4>
+                    <p>Client gửi HTTP request (dạng URL, Query string hoặc JSON). Server Gunicorn (4 threads) kiểm tra cú pháp và VIP License Key với máy chủ bản quyền <code>sangdev.online</code>.</p>
+                </div>
+
+                <div class="flow-card">
+                    <div class="flow-step-num">02</div>
+                    <h4>⚡ 2. Khởi Chạy Bất Đồng Bộ</h4>
+                    <p>Hệ thống trả về JSON phản hồi ngay lập tức (dưới 5ms) thông báo bot đã nhận lệnh, đồng thời cấp phát một luồng ngầm độc lập (Daemon Thread) để xử lý việc cày tương tác.</p>
+                </div>
+
+                <div class="flow-card">
+                    <div class="flow-step-num">03</div>
+                    <h4>🧩 3. Vượt Captcha Tự Động</h4>
+                    <p>Luồng bot tải ảnh Captcha từ Zefoy, dùng thuật toán <strong>RapidOCR</strong> nội bộ kết hợp <strong>NewOCR Web Cloud</strong> để nhận diện chữ chính xác và gửi giải mã chỉ trong ~0.2 giây.</p>
+                </div>
+
+                <div class="flow-card">
+                    <div class="flow-step-num">04</div>
+                    <h4>🎯 4. Gửi Lệnh & Đếm Ngược</h4>
+                    <p>Bot gửi yêu cầu tăng (Favorites/Views) đến TikTok. Sau mỗi lượt gửi thành công, bot tự động trích xuất bộ đếm lùi (Timer) của Zefoy, ngủ chờ chính xác và tiếp tục vòng lặp 24/7.</p>
+                </div>
+            </div>
+
+            <div class="callout callout-success">
+                <div class="callout-title">✓ Cơ chế Non-Blocking</div>
+                Mọi lệnh gọi API <code>/run</code> hoặc <code>/api/{key}={url}</code> không bao giờ làm treo kết nối mạng của bạn. Bot chạy trong nền và bạn có thể theo dõi tiến độ bất kỳ lúc nào qua API trạng thái hoặc Dashboard Web.
+            </div>
+        </section>
+
+        <!-- Parameters Specification -->
+        <section id="parameters">
+            <div class="section-header">
+                <h2>📋 Danh Sách Tham Số & Giá Trị Cần Thiết</h2>
+                <p>Tất cả các tham số bạn cần chuẩn bị khi gửi lệnh tới bot</p>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tham Số</th>
+                            <th>Kiểu Dữ Liệu</th>
+                            <th>Bắt Buộc</th>
+                            <th>Mặc Định</th>
+                            <th>Mô Tả & Giá Trị Hợp Lệ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>key</code></td>
+                            <td>String</td>
+                            <td><strong style="color: #f87171;">Bắt buộc</strong></td>
+                            <td>—</td>
+                            <td>Mã VIP License Key được cấp từ Sang Dev. Ví dụ: <code>VIP-X26Q-ES53-0EAC</code>. Hệ thống sẽ xác thực bản quyền trước khi cho phép bot khởi chạy.</td>
+                        </tr>
+                        <tr>
+                            <td><code>url</code></td>
+                            <td>String</td>
+                            <td><strong style="color: #f87171;">Bắt buộc</strong></td>
+                            <td>—</td>
+                            <td>Đường link video TikTok mục tiêu cần tăng. Hỗ trợ mọi định dạng:<br>
+                            • <code>https://www.tiktok.com/@user/video/7682004951563898132</code><br>
+                            • <code>https://vt.tiktok.com/ZS.../</code><br>
+                            • <code>https://vm.tiktok.com/.../</code>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>service</code></td>
+                            <td>String</td>
+                            <td>Tùy chọn</td>
+                            <td><code>Favorites</code></td>
+                            <td>Tên dịch vụ tương tác muốn tăng. Xem bảng dịch vụ bên dưới.</td>
+                        </tr>
+                        <tr>
+                            <td><code>restart_if_running</code></td>
+                            <td>Boolean</td>
+                            <td>Tùy chọn</td>
+                            <td><code>true</code></td>
+                            <td>Nếu bot đang chạy video cũ, gửi yêu cầu mới sẽ tự động chuyển hướng sang video/dịch vụ mới mà không cần phải gọi <code>/stop</code> thủ công.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="margin-top: 24px;">
+                <h3 style="font-size: 1.15rem; color: #fff; margin-bottom: 12px;">🎯 Bảng Trạng Thái Dịch Vụ (Service Values)</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Giá Trị Tham Số</th>
+                                <th>Tên Dịch Vụ</th>
+                                <th>Trạng Thái Zefoy</th>
+                                <th>Khuyên Dùng</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>Favorites</code></td>
+                                <td>Yêu thích Video (Lưu video)</td>
+                                <td><span style="color: #34d399; font-weight: 700;">🟢 Online</span></td>
+                                <td><strong style="color: #38bdf8;">Khuyên Dùng 24/7</strong> (Hoạt động ổn định nhất)</td>
+                            </tr>
+                            <tr>
+                                <td><code>Views</code></td>
+                                <td>Lượt xem Video</td>
+                                <td><span style="color: #fbbf24; font-weight: 600;">🟡 Tùy thời điểm</span></td>
+                                <td>Zefoy thường xuyên bảo trì theo đợt cập nhật của TikTok</td>
+                            </tr>
+                            <tr>
+                                <td><code>Hearts</code></td>
+                                <td>Thả Tim Video</td>
+                                <td><span style="color: #94a3b8;">⚪ Offline</span></td>
+                                <td>Chờ Zefoy mở lại</td>
+                            </tr>
+                            <tr>
+                                <td><code>Shares</code></td>
+                                <td>Chia sẻ Video</td>
+                                <td><span style="color: #94a3b8;">⚪ Offline</span></td>
+                                <td>Chờ Zefoy mở lại</td>
+                            </tr>
+                            <tr>
+                                <td><code>Comments Hearts</code></td>
+                                <td>Tim bình luận</td>
+                                <td><span style="color: #94a3b8;">⚪ Offline</span></td>
+                                <td>Chờ Zefoy mở lại</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- API Endpoints -->
+        <section id="endpoints">
+            <div class="section-header">
+                <h2>🔌 Chi Tiết Danh Sách API Endpoints</h2>
+                <p>Hỗ trợ đầy đủ các định dạng URL rút gọn, Query param và RESTful</p>
+            </div>
+
+            <!-- Endpoint 1: Shorthand -->
+            <div class="card" id="endpoint-shorthand">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="badge-method method-get">GET</span>
+                        <h3 style="color: #fff; font-family: var(--font-mono); font-size: 1.05rem;">/api/{key}={url}</h3>
+                    </div>
+                    <span style="font-size: 0.8rem; color: var(--accent); font-weight: 600;">⚡ Định Dạng Tiện Lợi Nhất</span>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 14px;">
+                    Định dạng URL siêu ngắn giúp kích hoạt bot trực tiếp chỉ bằng một đường dẫn duy nhất, có thể dán vào trình duyệt hoặc gọi từ script.
+                </p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span>Ví Dụ Gọi API</span>
+                        <button onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <pre>GET https://zefoy-oayb.onrender.com/api/VIP-X26Q-ES53-0EAC=https://www.tiktok.com/@fish_mc29/video/7682004951563898132</pre>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span>Kết Quả JSON Trả Về (200 OK)</span>
+                    </div>
+                    <pre>{
+  "success": true,
+  "message": "Khởi động bot thành công",
+  "key": "VIP-****0EAC",
+  "service": "Favorites",
+  "url": "https://www.tiktok.com/@fish_mc29/video/7682004951563898132",
+  "status_url": "https://zefoy-oayb.onrender.com/api/VIP-X26Q-ES53-0EAC"
+}</pre>
+                </div>
+            </div>
+
+            <!-- Endpoint 2: Standard Run -->
+            <div class="card" id="endpoint-run">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="badge-method method-get">GET</span>
+                        <span class="badge-method method-post">POST</span>
+                        <h3 style="color: #fff; font-family: var(--font-mono); font-size: 1.05rem;">/run hoặc /api/start</h3>
+                    </div>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">Query / JSON Body</span>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 14px;">
+                    Khởi động bot với đầy đủ các tùy chọn dịch vụ thông qua Query Parameters hoặc JSON Payload trong Body.
+                </p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span>Ví Dụ URL Query</span>
+                        <button onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <pre>GET https://zefoy-oayb.onrender.com/run?key=VIP-X26Q-ES53-0EAC&service=Favorites&url=https://www.tiktok.com/@fish_mc29/video/7682004951563898132</pre>
+                </div>
+            </div>
+
+            <!-- Endpoint 3: Status by Key -->
+            <div class="card" id="endpoint-status">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="badge-method method-get">GET</span>
+                        <h3 style="color: #fff; font-family: var(--font-mono); font-size: 1.05rem;">/api/{key}</h3>
+                    </div>
+                    <span style="font-size: 0.8rem; color: var(--emerald); font-weight: 600;">🔒 Bảo Mật Theo Key</span>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 14px;">
+                    Lấy toàn bộ thông tin chi tiết của tiến trình bot (đang chạy hay đã dừng, thời gian chờ đếm ngược, tổng số lần đã gửi, nhật ký hoạt động gần nhất).
+                </p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span>Ví Dụ Gọi API</span>
+                        <button onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <pre>GET https://zefoy-oayb.onrender.com/api/VIP-X26Q-ES53-0EAC</pre>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span>Kết Quả JSON Trả Về (200 OK)</span>
+                    </div>
+                    <pre>{
+  "success": true,
+  "is_running": true,
+  "key": "VIP-****0EAC",
+  "video_url": "https://www.tiktok.com/@fish_mc29/video/7682004951563898132",
+  "service": "Favorites",
+  "status": "Đang chờ hồi thời gian: 120s",
+  "timer": 120,
+  "last_sent": 100,
+  "total_sent": 500,
+  "online_services": ["Favorites"],
+  "logs": [
+    "[20:15:10] Giải Captcha thành công: word",
+    "[20:15:12] Gửi tương tác thành công! +100 Favorites",
+    "[20:15:13] Bộ đếm thời gian: 120 giây"
+  ]
+}</pre>
+                </div>
+            </div>
+
+            <!-- Endpoint 4: Online Services -->
+            <div class="card" id="endpoint-services">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="badge-method method-get">GET</span>
+                        <h3 style="color: #fff; font-family: var(--font-mono); font-size: 1.05rem;">/api/services (hoặc /api/online)</h3>
+                    </div>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 14px;">
+                    Liệt kê danh sách các tính năng đang hoạt động (Online) và các tính năng đang bảo trì (Offline) trên hệ thống Zefoy.
+                </p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span>Ví Dụ Gọi API</span>
+                        <button onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <pre>GET https://zefoy-oayb.onrender.com/api/services</pre>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span>Kết Quả JSON Trả Về</span>
+                    </div>
+                    <pre>{
+  "success": true,
+  "online_count": 1,
+  "online": ["Favorites"],
+  "services": [
+    {"name": "Favorites", "status": "Online", "available": true},
+    {"name": "Views", "status": "Offline / Soon will be update", "available": false},
+    {"name": "Hearts", "status": "Offline / Soon will be update", "available": false}
+  ]
+}</pre>
+                </div>
+            </div>
+
+            <!-- Endpoint 5: Stop & Ping -->
+            <div class="card" id="endpoint-stop">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="badge-method method-get">GET</span>
+                        <span class="badge-method method-post">POST</span>
+                        <h3 style="color: #fff; font-family: var(--font-mono); font-size: 1.05rem;">/stop hoặc /api/stop</h3>
+                    </div>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Dừng an toàn tiến trình bot đang chạy trên server.</p>
+            </div>
+
+            <div class="card" id="endpoint-ping">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="badge-method method-get">GET</span>
+                        <h3 style="color: #fff; font-family: var(--font-mono); font-size: 1.05rem;">/ping hoặc /health</h3>
+                    </div>
+                    <span style="font-size: 0.8rem; color: var(--accent); font-weight: 600;">💓 Chống Sleep & Giữ Ấm Server</span>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 8px;">
+                    Dùng cho hệ thống UptimeRobot hoặc Cronjob định kỳ ping để ngăn Render đưa server vào chế độ ngủ đông (Sleep).
+                </p>
+                <div class="code-container">
+                    <pre>{ "status": "ok", "bot_running": true, "uptime": 3600 }</pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive API Tester / Playground -->
+        <section id="playground">
+            <div class="section-header">
+                <h2>🧪 Trình Thử Nghiệm API Trực Tiếp (API Playground)</h2>
+                <p>Nhập thông số của bạn bên dưới và nhấn nút để gửi yêu cầu thực tế tới server</p>
+            </div>
+
+            <div class="tester-box">
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>🌐 Server API Base URL</label>
+                        <input type="text" id="testBaseUrl" value="https://zefoy-oayb.onrender.com">
+                    </div>
+                    <div class="input-group">
+                        <label>🔑 VIP License Key</label>
+                        <input type="text" id="testKey" value="VIP-X26Q-ES53-0EAC">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>🔗 TikTok Video URL</label>
+                        <input type="text" id="testVideoUrl" value="https://www.tiktok.com/@fish_mc29/video/7682004951563898132">
+                    </div>
+                    <div class="input-group">
+                        <label>🎯 Chọn Dịch Vụ</label>
+                        <select id="testService">
+                            <option value="Favorites">Favorites (Khuyên dùng - Online)</option>
+                            <option value="Views">Views (Lượt xem)</option>
+                            <option value="Hearts">Hearts (Tim)</option>
+                            <option value="Shares">Shares (Chia sẻ)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="btn-action-row">
+                    <button class="btn-test" onclick="runTestShorthand()">
+                        ▶ Chạy Bằng URL Rút Gọn (/api/{key}={url})
+                    </button>
+                    <button class="btn-secondary" onclick="runTestStandard()">
+                        ⚡ Chạy Bằng /run
+                    </button>
+                    <button class="btn-secondary" onclick="checkStatusByKey()">
+                        📊 Kiểm Tra Trạng Thái (/api/{key})
+                    </button>
+                    <button class="btn-secondary" onclick="fetchServicesOnline()">
+                        🟢 Danh Sách Online (/api/services)
+                    </button>
+                    <button class="btn-secondary" onclick="pingHealth()">
+                        💓 Ping Health (/ping)
+                    </button>
+                    <button class="btn-danger" onclick="stopBotApi()">
+                        ⏹ Dừng Bot (/stop)
+                    </button>
+                </div>
+
+                <div class="tester-output">
+                    <div class="tester-status-bar">
+                        <span id="outputUrl" style="color: var(--text-muted); word-break: break-all;">Chưa gửi yêu cầu...</span>
+                        <span id="outputStatus" class="status-badge status-200">WAITING</span>
+                    </div>
+                    <pre id="outputJson">// Kết quả phản hồi JSON từ Server sẽ hiển thị ở đây...</pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Code Samples -->
+        <section id="code-samples">
+            <div class="section-header">
+                <h2>💻 Code Mẫu Tích Hợp (SDK & Multi-language)</h2>
+                <p>Mã nguồn mẫu sẵn sàng copy vào dự án của bạn</p>
+            </div>
+
+            <div class="card" style="padding: 0; overflow: hidden;">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab(event, 'tab-curl')">cURL</button>
+                    <button class="tab-btn" onclick="switchTab(event, 'tab-python')">Python</button>
+                    <button class="tab-btn" onclick="switchTab(event, 'tab-js')">JavaScript / Node.js</button>
+                    <button class="tab-btn" onclick="switchTab(event, 'tab-php')">PHP</button>
+                </div>
+
+                <!-- cURL -->
+                <div id="tab-curl" class="tab-content active">
+                    <div class="code-container" style="margin: 0; border: none; border-radius: 0;">
+                        <div class="code-header">
+                            <span>cURL Command</span>
+                            <button onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <pre># 1. Chạy bot bằng định dạng URL nhanh:
+curl -X GET "https://zefoy-oayb.onrender.com/api/VIP-X26Q-ES53-0EAC=https://www.tiktok.com/@fish_mc29/video/7682004951563898132"
+
+# 2. Kiểm tra trạng thái tiến trình của Key:
+curl -X GET "https://zefoy-oayb.onrender.com/api/VIP-X26Q-ES53-0EAC"
+
+# 3. Lấy danh sách tính năng Online:
+curl -X GET "https://zefoy-oayb.onrender.com/api/services"</pre>
+                    </div>
+                </div>
+
+                <!-- Python -->
+                <div id="tab-python" class="tab-content">
+                    <div class="code-container" style="margin: 0; border: none; border-radius: 0;">
+                        <div class="code-header">
+                            <span>Python (requests)</span>
+                            <button onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <pre>import requests
+
+BASE_URL = "https://zefoy-oayb.onrender.com"
+KEY = "VIP-X26Q-ES53-0EAC"
+TIKTOK_URL = "https://www.tiktok.com/@fish_mc29/video/7682004951563898132"
+
+# 1. Khởi chạy bot
+run_res = requests.get(f"{BASE_URL}/run", params={
+    "key": KEY,
+    "service": "Favorites",
+    "url": TIKTOK_URL
+})
+print("Start Bot:", run_res.json())
+
+# 2. Theo dõi tiến trình
+status_res = requests.get(f"{BASE_URL}/api/{KEY}")
+data = status_res.json()
+print(f"Trạng thái: {data.get('status')} | Timer: {data.get('timer')}s | Đã gửi: {data.get('total_sent')}")</pre>
+                    </div>
+                </div>
+
+                <!-- JavaScript -->
+                <div id="tab-js" class="tab-content">
+                    <div class="code-container" style="margin: 0; border: none; border-radius: 0;">
+                        <div class="code-header">
+                            <span>JavaScript (Fetch API / Node.js)</span>
+                            <button onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <pre>const BASE_URL = "https://zefoy-oayb.onrender.com";
+const KEY = "VIP-X26Q-ES53-0EAC";
+const VIDEO_URL = "https://www.tiktok.com/@fish_mc29/video/7682004951563898132";
+
+// 1. Kích hoạt bot
+async function startBot() {
+    const res = await fetch(`${BASE_URL}/api/${KEY}=${encodeURIComponent(VIDEO_URL)}`);
+    const data = await res.json();
+    console.log("Response:", data);
+}
+
+// 2. Kiểm tra tiến độ
+async function checkProgress() {
+    const res = await fetch(`${BASE_URL}/api/${KEY}`);
+    const state = await res.json();
+    console.log(`Đang chạy: ${state.is_running}, Timer: ${state.timer}s, Sent: ${state.total_sent}`);
+}
+
+startBot();</pre>
+                    </div>
+                </div>
+
+                <!-- PHP -->
+                <div id="tab-php" class="tab-content">
+                    <div class="code-container" style="margin: 0; border: none; border-radius: 0;">
+                        <div class="code-header">
+                            <span>PHP</span>
+                            <button onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <pre>&lt;?php
+$baseUrl = "https://zefoy-oayb.onrender.com";
+$key = "VIP-X26Q-ES53-0EAC";
+$videoUrl = urlencode("https://www.tiktok.com/@fish_mc29/video/7682004951563898132");
+
+// Kích hoạt bot
+$response = file_get_contents("{$baseUrl}/api/{$key}={$videoUrl}");
+$result = json_decode($response, true);
+
+print_r($result);
+?&gt;</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Anti-502 & Production Setup -->
+        <section id="anti-502">
+            <div class="section-header">
+                <h2>🛡️ Hướng Dẫn Vận Hành 24/7 & Chống Lỗi 502 Bad Gateway</h2>
+                <p>Các tiêu chuẩn kỹ thuật đã tối ưu hóa cho Render Free Tier</p>
+            </div>
+
+            <div class="card">
+                <h3 style="color: #fff; margin-bottom: 12px;">1. Gunicorn WSGI Đa Luồng (--workers 1 --threads 4)</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 12px;">
+                    Render Free có giới hạn bộ nhớ <strong>512MB RAM</strong>. Nếu cấu hình nhiều Process Worker sẽ gây tràn RAM và bị Linux OOM Killer tắt tiến trình (nguyên nhân chính gây 502). Cấu hình 1 Worker với 4 Threads duy trì mức RAM ổn định chỉ ~120MB và phục vụ song song các lượt ping, gọi API mà không bị nghẽn.
+                </p>
+
+                <h3 style="color: #fff; margin-top: 20px; margin-bottom: 12px;">2. Chống Ngủ Đông Bằng UptimeRobot (Khuyên Dùng)</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 12px;">
+                    Render Free tự động tắt máy chủ sau 15 phút nếu không có lượt truy cập từ bên ngoài. Khi có người truy cập lại, Render mất 50–90 giây để bật lại máy chủ, trong thời gian đó có thể xảy ra lỗi 502 Bad Gateway.
+                </p>
+
+                <div class="callout callout-warning">
+                    <div class="callout-title">💡 Giải pháp giữ server luôn Online 24/7:</div>
+                    1. Truy cập <a href="https://uptimerobot.com" target="_blank" style="color: var(--accent); font-weight: 700;">UptimeRobot.com</a> (Đăng ký miễn phí).<br>
+                    2. Tạo một Monitor loại <strong>HTTP(s)</strong>.<br>
+                    3. Nhập URL: <code>https://zefoy-oayb.onrender.com/ping</code>.<br>
+                    4. Đặt chu kỳ kiểm tra: <strong>5 phút một lần</strong>.<br>
+                    => Render sẽ luôn nhận được tín hiệu HTTP và không bao giờ bị rơi vào trạng thái ngủ đông!
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            Bản quyền hệ thống Zefoy Automation &copy; 2026 bởi <a href="https://sangdev.online" target="_blank">Sang Dev</a>.<br>
+            Kênh hỗ trợ Telegram: <a href="https://t.me/sangnguyendev" target="_blank">@sangnguyendev</a> | Website: <a href="https://sangdev.online" target="_blank">sangdev.online</a>
+        </footer>
+
+    </main>
+
+    <script>
+        // Copy Code Functionality
+        function copyCode(btn) {
+            const container = btn.closest('.code-container');
+            const pre = container.querySelector('pre');
+            navigator.clipboard.writeText(pre.innerText).then(() => {
+                const oldText = btn.innerText;
+                btn.innerText = '✓ Copied!';
+                btn.style.background = '#10b981';
+                btn.style.color = '#fff';
+                setTimeout(() => {
+                    btn.innerText = oldText;
+                    btn.style.background = '';
+                    btn.style.color = '';
+                }, 2000);
+            });
+        }
+
+        // Tab Switching
+        function switchTab(evt, tabId) {
+            const parentCard = evt.target.closest('.card');
+            parentCard.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            parentCard.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            evt.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // Interactive API Tester Logic
+        function getTesterInputs() {
+            const baseUrl = document.getElementById('testBaseUrl').value.trim().replace(/\/+$/, '');
+            const key = document.getElementById('testKey').value.trim();
+            const url = document.getElementById('testVideoUrl').value.trim();
+            const service = document.getElementById('testService').value;
+            return { baseUrl, key, url, service };
+        }
+
+        function displayResult(reqUrl, statusCode, jsonData) {
+            document.getElementById('outputUrl').innerText = reqUrl;
+            const statusBadge = document.getElementById('outputStatus');
+            statusBadge.innerText = `HTTP ${statusCode}`;
+            statusBadge.className = 'status-badge ' + (statusCode >= 200 && statusCode < 300 ? 'status-200' : (statusCode < 500 ? 'status-400' : 'status-500'));
+            document.getElementById('outputJson').innerText = JSON.stringify(jsonData, null, 2);
+        }
+
+        async function makeRequest(fullUrl, options = {}) {
+            document.getElementById('outputUrl').innerText = 'Đang gửi: ' + fullUrl + '...';
+            document.getElementById('outputStatus').innerText = 'LOADING...';
+            document.getElementById('outputStatus').className = 'status-badge status-400';
+            document.getElementById('outputJson').innerText = '// Đang chờ máy chủ phản hồi...';
+
+            try {
+                const res = await fetch(fullUrl, options);
+                const data = await res.json();
+                displayResult(fullUrl, res.status, data);
+            } catch (err) {
+                displayResult(fullUrl, 'ERROR', { error: err.message, note: 'Kiểm tra xem server Render có đang thức không hoặc lỗi CORS' });
+            }
+        }
+
+        function runTestShorthand() {
+            const { baseUrl, key, url, service } = getTesterInputs();
+            if (!key || !url) return alert('Vui lòng nhập đầy đủ Key và Video URL!');
+            const reqUrl = `${baseUrl}/api/${key}=${encodeURIComponent(url)}?service=${encodeURIComponent(service)}`;
+            makeRequest(reqUrl);
+        }
+
+        function runTestStandard() {
+            const { baseUrl, key, url, service } = getTesterInputs();
+            if (!key || !url) return alert('Vui lòng nhập đầy đủ Key và Video URL!');
+            const reqUrl = `${baseUrl}/run?key=${encodeURIComponent(key)}&service=${encodeURIComponent(service)}&url=${encodeURIComponent(url)}`;
+            makeRequest(reqUrl);
+        }
+
+        function checkStatusByKey() {
+            const { baseUrl, key } = getTesterInputs();
+            if (!key) return alert('Vui lòng nhập Key!');
+            const reqUrl = `${baseUrl}/api/${encodeURIComponent(key)}`;
+            makeRequest(reqUrl);
+        }
+
+        function fetchServicesOnline() {
+            const { baseUrl } = getTesterInputs();
+            const reqUrl = `${baseUrl}/api/services`;
+            makeRequest(reqUrl);
+        }
+
+        function pingHealth() {
+            const { baseUrl } = getTesterInputs();
+            const reqUrl = `${baseUrl}/ping`;
+            makeRequest(reqUrl);
+        }
+
+        function stopBotApi() {
+            const { baseUrl } = getTesterInputs();
+            const reqUrl = `${baseUrl}/stop`;
+            makeRequest(reqUrl);
+        }
+    </script>
+</body>
+</html>

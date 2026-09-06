@@ -504,6 +504,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             <div class="badge-header">⚡ SANG DEV CLOUD BOT</div>
             <h1>Zefoy Automation Dashboard</h1>
             <p class="subtitle">Hệ thống tăng tương tác TikTok tự động 24/7 trên Render</p>
+            <div style="margin-top: 12px;">
+                <a href="/docs" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: var(--accent); padding: 6px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-decoration: none;">📖 Xem Tài Liệu API & Hướng Dẫn Chi Tiết</a>
+            </div>
         </header>
 
         <!-- Stats Grid -->
@@ -699,6 +702,14 @@ def index():
         service=state["service"],
         key=state["key"]
     )
+
+@app.route("/docs")
+@app.route("/api/docs")
+def api_docs():
+    docs_file = _ROOT / "docs.html"
+    if docs_file.exists():
+        return docs_file.read_text(encoding="utf-8")
+    return "Tài liệu không tìm thấy", 404
 
 def mask_key(k):
     if not k:
