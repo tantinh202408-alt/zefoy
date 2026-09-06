@@ -116,10 +116,18 @@ class BotManager:
                 self.timer = 0
             self.add_log("Tiến trình Zefoy đã kết thúc.")
 
-    def start(self, url, service, key):
+    def start(self, url, service, key, restart_if_running=True):
         with self.lock:
             if self.is_running:
-                return False, "Bot đang chạy rồi!"
+                if restart_if_running:
+                    self.add_log("Phát hiện yêu cầu mới, đang khởi động lại bot cho dịch vụ/URL mới...")
+                    if self.bot:
+                        self.bot.is_running = False
+                    self.is_running = False
+                    self.status = "Đang khởi động lại..."
+                    time.sleep(0.5)
+                else:
+                    return False, "Bot đang chạy rồi! Truy cập /stop để dừng tiến trình cũ trước."
             self.is_running = True
             self.status = "Đang khởi động..."
             self.video_url = url
