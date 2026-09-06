@@ -20,6 +20,15 @@ from run import Zefoy, KEY_FILE, check_key_api, is_vip_key
 
 app = Flask(__name__)
 
+DEFAULT_SERVICES = [
+    {"name": "Favorites", "status": "Online", "available": True},
+    {"name": "Views", "status": "Offline / Soon will be update", "available": False},
+    {"name": "Hearts", "status": "Offline / Soon will be update", "available": False},
+    {"name": "Followers", "status": "Offline / Soon will be update", "available": False},
+    {"name": "Shares", "status": "Offline / Soon will be update", "available": False},
+    {"name": "Comments Hearts", "status": "Offline / Soon will be update", "available": False},
+]
+
 # --- In-Memory State Manager ---
 class BotManager:
     def __init__(self):
@@ -36,6 +45,7 @@ class BotManager:
         self.key = self._get_initial_key()
         self.logs = []
         self.video_stats = {}
+        self.services_list = list(DEFAULT_SERVICES)
         self.start_time = time.time()
 
     def _get_initial_key(self):
@@ -646,25 +656,85 @@ def index():
 
 @app.route("/api/status")
 def api_status():
-    return jsonify(manager.get_state())
+    state = manager.get_state()
+    state["online_services"] = [s["name"] for s in manager.services_list if s.get("available")]
+    return jsonify(state)
 
-@app.route("/api/start", methods=["POST"])
-def api_start():
-    data = request.get_json(force=True, silent=True) or {}
-    url = (data.get("url") or "").strip()
-    service = (data.get("service") or "Favorites").strip()
-    key = (data.get("key") or "").strip()
+@app.route("/api/services")
+@app.route("/services")
+@app.route("/api/online")
+def api_services():
+    services = manager.services_list
+    online_names = [s["name"] for s in services if s.get("available")]
+    return jsonify({
+        "success": True,
+        "online_count": len(online_names),
+        "online": online_names,
+        "services": services
+    })
+
+@app.route("/run", methods=["GET", "POST"])
+@app.route("/api/start", methods=["GET", "POST"])
+@app.route("/run/<path:key>/<service>", methods=["GET", "POST"])
+@app.route("/run/<service>", methods=["GET", "POST"])
+def api_run(key=None, service=None):
+    # 1. URL parameter
+    url = (request.args.get("url") or "").strip()
+    if not url and request.is_json:
+        url = ((request.get_json(silent=True) or {}).get("url") or "").strip()
+    if not url and request.form:
+        url = (request.form.get("url") or "").strip()
+
+    # 2. Service parameter
+    req_service = service or request.args.get("service") or request.args.get("type")
+    if not req_service and request.is_json:
+        req_service = (request.get_json(silent=True) or {}).get("service")
+    if not req_service and request.form:
+        req_service = request.form.get("service")
+    service_name = req_service or manager.service or "Favorites"
+
+    # Normalize service name
+    s_low = service_name.lower().replace(" ", "").replace("_", "")
+    for s in manager.services_list:
+        if s["name"].lower().replace(" ", "").replace("_", "") == s_low:
+            service_name = s["name"]
+            break
+
+    # 3. Key parameter
+    req_key = key or request.args.get("key")
+    if not req_key and request.is_json:
+        req_key = (request.get_json(silent=True) or {}).get("key")
+    if not req_key and request.form:
+        req_key = request.form.get("key")
+    key_val = req_key or manager.key
 
     if not url:
-        return jsonify({"success": False, "message": "Link video không được để trống!"}), 400
+        return jsonify({
+            "success": False,
+            "message": "Vui lòng truyền tham số url! Ví dụ: /run?key=VIP-XXX&service=Favorites&url=https://www.tiktok.com/@user/video/123",
+            "usage_examples": [
+                f"{request.host_url}run?key={key_val or 'VIP-KEY'}&service={service_name}&url=https://www.tiktok.com/@user/video/...",
+                f"{request.host_url}run/{key_val or 'VIP-KEY'}/{service_name}?url=https://www.tiktok.com/@user/video/...",
+                f"{request.host_url}run?url=https://www.tiktok.com/@user/video/..."
+            ]
+        }), 400
 
-    ok, msg = manager.start(url=url, service=service, key=key)
-    return jsonify({"success": ok, "message": msg})
+    ok, msg = manager.start(url=url, service=service_name, key=key_val)
+    return jsonify({
+        "success": ok,
+        "message": msg,
+        "url": url,
+        "service": service_name,
+        "key": key_val,
+        "dashboard": request.host_url,
+        "status_url": f"{request.host_url}api/status"
+    }), (200 if ok else 400)
 
-@app.route("/api/stop", methods=["POST"])
+@app.route("/stop", methods=["GET", "POST"])
+@app.route("/api/stop", methods=["GET", "POST"])
 def api_stop():
     ok, msg = manager.stop()
-    return jsonify({"success": ok, "message": msg})
+    return jsonify({"success": ok, "message": msg, "status": manager.status})
 
 @app.route("/ping")
 @app.route("/health")
