@@ -644,8 +644,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             return div.innerHTML;
         }
 
-        // Poll every 1.5s
-        setInterval(updateStatus, 1500);
+        // Poll every 3s to optimize server load
+        setInterval(updateStatus, 3000);
         updateStatus();
     </script>
 </body>

@@ -398,7 +398,14 @@ class Zefoy:
         if m:
             self.video_key = m.group(1)
 
-    def send_captcha(self, new_session = False):
+    def send_captcha(self, new_session = False, retries = 0):
+        if retries >= 8:
+            msg = 'Đã thử giải Captcha 8 lần, tạm nghỉ 10s để giải phóng tài nguyên...'
+            if self.on_log:
+                self.on_log(msg)
+            time.sleep(10)
+            retries = 0
+
         if new_session:
             self.session = requests.Session()
             self.session.headers.update({
@@ -430,8 +437,8 @@ class Zefoy:
                 self.on_log(msg)
             if not self.headless:
                 print(f'  \033[1;31m[!] {msg}\033[0m')
-            time.sleep(1)
-            return self.send_captcha(new_session=True)
+            time.sleep(1.5)
+            return self.send_captcha(new_session=True, retries=retries + 1)
 
         if self.on_log:
             self.on_log(f"Đã giải Captcha: {captcha_solve}, đang gửi xác thực...")
@@ -484,8 +491,8 @@ class Zefoy:
         msg = f"Captcha không khớp ({captcha_solve}), đang thử lại..."
         if self.on_log:
             self.on_log(msg)
-        time.sleep(1)
-        return self.send_captcha(new_session=True)
+        time.sleep(1.5)
+        return self.send_captcha(new_session=True, retries=retries + 1)
 
     def solve_captcha(self, path_to_file = None, b64 = None, delete_tag = ['\n','\r']):
         if path_to_file:
