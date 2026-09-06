@@ -11,6 +11,7 @@ import threading
 from datetime import datetime
 from pathlib import Path
 from flask import Flask, request, jsonify, render_template_string
+import requests
 
 _ROOT = Path(__file__).resolve().parent
 if str(_ROOT) not in sys.path:
@@ -169,6 +170,43 @@ class BotManager:
             }
 
 manager = BotManager()
+
+# Keep-Alive pinger to prevent Render Free tier from sleeping after 15 minutes of inactivity
+def _start_keep_alive():
+    external_url = os.environ.get("RENDER_EXTERNAL_URL") or os.environ.get("KEEP_ALIVE_URL")
+    if not external_url:
+        return
+
+    def _pinger():
+        ping_endpoint = external_url.rstrip("/") + "/ping"
+        print(f"[*] Bật chế độ chống Sleep Render (Keep-Alive): {ping_endpoint}")
+        time.sleep(60)  # Wait 1 minute after server start
+        while True:
+            try:
+                requests.get(ping_endpoint, timeout=10)
+            except Exception:
+                pass
+            time.sleep(600)  # Ping every 10 minutes (Render sleeps at 15m)
+
+    t = threading.Thread(target=_pinger, daemon=True)
+    t.start()
+
+_start_keep_alive()
+
+# Auto-start check on module load (supports Gunicorn, Waitress, Werkzeug)
+if os.environ.get("AUTO_START", "").lower() in ("true", "1", "yes"):
+    _initial_url = os.environ.get("TIKTOK_URL", "").strip()
+    if _initial_url:
+        print("[*] Phát hiện AUTO_START=true, tự động khởi chạy bot...")
+        try:
+            manager.start(
+                url=_initial_url,
+                service=os.environ.get("ZEFOY_SERVICE", "Favorites"),
+                key=os.environ.get("ZEFOY_KEY", "")
+            )
+        except Exception as _e:
+            print(f"[!] Lỗi auto-start: {_e}")
+
 
 # --- Web UI Template ---
 HTML_TEMPLATE = """<!DOCTYPE html>
@@ -680,70 +718,6 @@ def api_status():
     state["online_services"] = [s["name"] for s in manager.services_list if s.get("available")]
     return jsonify(state)
 
-@app.route("/api/<path:user_input>", methods=["GET", "POST"])
-def api_key_direct(user_input):
-    user_input = user_input.strip()
-
-    # Case 1: https://domain/api/{key}=url format
-    if "=" in user_input and ("http://" in user_input or "https://" in user_input or "tiktok.com" in user_input):
-        key_part, _, url_part = user_input.partition("=")
-        key_val = key_part.strip()
-        url = url_part.strip()
-    else:
-        key_val = user_input
-        url = (request.args.get("url") or "").strip()
-
-    if not url and request.is_json:
-        url = ((request.get_json(silent=True) or {}).get("url") or "").strip()
-    if not url and request.form:
-        url = (request.form.get("url") or "").strip()
-
-    req_service = request.args.get("service") or request.args.get("type")
-    if not req_service and request.is_json:
-        req_service = (request.get_json(silent=True) or {}).get("service")
-    service_name = req_service or manager.service or "Favorites"
-
-    for s in manager.services_list:
-        if s["name"].lower().replace(" ", "").replace("_", "") == service_name.lower().replace(" ", "").replace("_", ""):
-            service_name = s["name"]
-            break
-
-    # If URL is provided -> RUN BOT
-    if url:
-        ok, msg = manager.start(url=url, service=service_name, key=key_val)
-        return jsonify({
-            "success": ok,
-            "message": msg,
-            "key": mask_key(key_val),
-            "service": service_name,
-            "url": url,
-            "status_url": f"{request.host_url}api/{key_val}"
-        }), (200 if ok else 400)
-
-    # If NO URL is provided -> RETURN STATUS FOR THIS KEY
-    state = manager.get_state()
-    is_owner = (key_val.lower() == (manager.key or "").lower())
-    if not is_owner:
-        return jsonify({
-            "success": False,
-            "message": "Key không khớp với bot đang chạy trên server!",
-            "key_provided": mask_key(key_val)
-        }), 403
-
-    return jsonify({
-        "success": True,
-        "key": mask_key(key_val),
-        "is_running": state["is_running"],
-        "video_url": state["video_url"],
-        "service": state["service"],
-        "status": state["status"],
-        "timer": state["timer"],
-        "last_sent": state["last_sent"],
-        "total_sent": state["total_sent"],
-        "online_services": [s["name"] for s in manager.services_list if s.get("available")],
-        "logs": state["logs"][-15:]
-    })
-
 @app.route("/api/services")
 @app.route("/services")
 @app.route("/api/online")
@@ -829,19 +803,90 @@ def ping():
         "uptime": int(time.time() - manager.start_time)
     }), 200
 
+@app.route("/api/<path:user_input>", methods=["GET", "POST"])
+def api_key_direct(user_input):
+    user_input = user_input.strip()
+
+    # Case 1: https://domain/api/{key}=url format
+    if "=" in user_input and ("http://" in user_input or "https://" in user_input or "tiktok.com" in user_input):
+        key_part, _, url_part = user_input.partition("=")
+        key_val = key_part.strip()
+        url = url_part.strip()
+    else:
+        key_val = user_input
+        url = (request.args.get("url") or "").strip()
+
+    if not url and request.is_json:
+        url = ((request.get_json(silent=True) or {}).get("url") or "").strip()
+    if not url and request.form:
+        url = (request.form.get("url") or "").strip()
+
+    req_service = request.args.get("service") or request.args.get("type")
+    if not req_service and request.is_json:
+        req_service = (request.get_json(silent=True) or {}).get("service")
+    service_name = req_service or manager.service or "Favorites"
+
+    for s in manager.services_list:
+        if s["name"].lower().replace(" ", "").replace("_", "") == service_name.lower().replace(" ", "").replace("_", ""):
+            service_name = s["name"]
+            break
+
+    # If URL is provided -> RUN BOT
+    if url:
+        ok, msg = manager.start(url=url, service=service_name, key=key_val)
+        return jsonify({
+            "success": ok,
+            "message": msg,
+            "key": mask_key(key_val),
+            "service": service_name,
+            "url": url,
+            "status_url": f"{request.host_url}api/{key_val}"
+        }), (200 if ok else 400)
+
+    # If NO URL is provided -> RETURN STATUS FOR THIS KEY
+    state = manager.get_state()
+    is_owner = (key_val.lower() == (manager.key or "").lower())
+    if not is_owner:
+        return jsonify({
+            "success": False,
+            "message": "Key không khớp với bot đang chạy trên server!",
+            "key_provided": mask_key(key_val)
+        }), 403
+
+    return jsonify({
+        "success": True,
+        "key": mask_key(key_val),
+        "is_running": state["is_running"],
+        "video_url": state["video_url"],
+        "service": state["service"],
+        "status": state["status"],
+        "timer": state["timer"],
+        "last_sent": state["last_sent"],
+        "total_sent": state["total_sent"],
+        "online_services": [s["name"] for s in manager.services_list if s.get("available")],
+        "logs": state["logs"][-15:]
+    })
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
+
+    # Auto switch to Gunicorn on Linux/Render even if user set Start Command as "python app.py"
+    if sys.platform != "win32" and os.environ.get("RUN_WITH_WERKZEUG", "0") != "1":
+        try:
+            import gunicorn
+            cmd = [
+                "gunicorn",
+                "--workers", "1",
+                "--threads", "4",
+                "--timeout", "120",
+                "--keep-alive", "5",
+                "--bind", f"0.0.0.0:{port}",
+                "app:app"
+            ]
+            print(f"[*] Sang Dev Bot: Chuyển sang WSGI Gunicorn sản xuất ({port})...")
+            os.execvp("gunicorn", cmd)
+        except Exception as e:
+            print(f"[!] Gunicorn fallback: {e}")
+
     print(f"[*] Sang Dev Zefoy Web Server đang khởi động tại cổng {port}...")
-
-    # Auto-start check
-    auto_start = os.environ.get("AUTO_START", "").lower() in ("true", "1", "yes")
-    initial_url = os.environ.get("TIKTOK_URL", "").strip()
-    if auto_start and initial_url:
-        print("[*] Phát hiện AUTO_START=true, tự động khởi chạy bot...")
-        manager.start(
-            url=initial_url,
-            service=os.environ.get("ZEFOY_SERVICE", "Favorites"),
-            key=os.environ.get("ZEFOY_KEY", "")
-        )
-
-    app.run(host="0.0.0.0", port=port, debug=False)
+    app.run(host="0.0.0.0", port=port, debug=False, threaded=True)
