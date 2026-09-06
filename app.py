@@ -663,6 +663,7 @@ def index():
     )
 
 @app.route("/api/status")
+@app.route("/status")
 def api_status():
     state = manager.get_state()
     state["online_services"] = [s["name"] for s in manager.services_list if s.get("available")]
