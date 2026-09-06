@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: zefoy-bot
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: ZEFOY_KEY
+        sync: false
+      - key: TIKTOK_URL
+        sync: false
+      - key: ZEFOY_SERVICE
+        value: Favorites
+      - key: AUTO_START
+        value: "false"
